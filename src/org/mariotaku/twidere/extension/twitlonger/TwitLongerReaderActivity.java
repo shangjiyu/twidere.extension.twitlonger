@@ -84,7 +84,7 @@ public class TwitLongerReaderActivity extends Activity implements Constants, OnC
 							}
 						}
 				}else {
-					Toast.makeText(getApplicationContext(), "没有推文内容...", Toast.LENGTH_SHORT).show();
+					Toast.makeText(TwitLongerReaderActivity.this, R.string.none_of_plaintext, Toast.LENGTH_SHORT).show();
 					return;
 				}
 				break;
@@ -236,7 +236,7 @@ public class TwitLongerReaderActivity extends Activity implements Constants, OnC
 
 		@Override
 		protected void onPreExecute() {
-			Toast.makeText(getApplicationContext(), "准备获取翻译结果", Toast.LENGTH_LONG).show();
+			Toast.makeText(TwitLongerReaderActivity.this, R.string.waiting_for_translated_text, Toast.LENGTH_LONG).show();
 			super.onPreExecute();
 		}
 	}

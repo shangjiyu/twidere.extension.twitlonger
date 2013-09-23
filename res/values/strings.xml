@@ -12,5 +12,7 @@
 	<string name="more_applications">More applications</string>
 	<string name="donate">Donate</string>
 	<string name="about">About</string>
+	<string name="none_of_plaintext">no text</string>
+	<string name="waiting_for_translated_text">Waiting For Translated Text</string>
 
 </resources>

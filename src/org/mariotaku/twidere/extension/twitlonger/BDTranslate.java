@@ -42,7 +42,7 @@ public class BDTranslate {
 	private static final Pattern PATTERN_LINK = Pattern.compile("((RT\\s?)?(@([a-zA-Z0-9_\\u4e00-\\u9fa5]{1,20})):?)|((https?://)([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\-\\.]*(\\?\\S+)?)?)?)|(\\#[a-zA-Z0-9_%\\u4e00-\\u9fa5]*)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern PATTERN_ALPHA = Pattern.compile("_____|_ _ _ _ _");
 	private final ArrayList<String> linkStrings = new ArrayList<String>();
-	private int URLIndex = 0;
+	private int uneed2TranslateElementIndex = 0;
 	
 	public BDTranslate() {
 		// TODO Auto-generated constructor stub
@@ -106,8 +106,8 @@ public class BDTranslate {
 	public String replaceURL(Pattern pattern,String toReplaceString) {
 		final Matcher matcher = pattern.matcher(toReplaceString);
 		if (matcher.find()) {
-			toReplaceString = matcher.replaceFirst(linkStrings.get(URLIndex));
-			URLIndex++;
+			toReplaceString = matcher.replaceFirst(linkStrings.get(uneed2TranslateElementIndex));
+			uneed2TranslateElementIndex++;
 			return replaceURL(pattern, toReplaceString);
 		}else {
 			return toReplaceString;
