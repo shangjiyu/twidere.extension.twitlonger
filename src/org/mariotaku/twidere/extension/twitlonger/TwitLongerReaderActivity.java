@@ -4,8 +4,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.mariotaku.twidere.Twidere;
-import org.mariotaku.twidere.extension.twitlonger.BDTranslate.BDTranslateException;
-import org.mariotaku.twidere.extension.twitlonger.BDTranslate.TranslateResponse;
+import org.mariotaku.twidere.extension.twitlonger.MSTranslate.MSTranslateException;
+import org.mariotaku.twidere.extension.twitlonger.MSTranslate.TranslateResponse;
 import org.mariotaku.twidere.extension.twitlonger.TwitLonger.TwitLongerException;
 import org.mariotaku.twidere.extension.twitlonger.TwitLonger.TwitLongerResponse;
 import org.mariotaku.twidere.model.ParcelableStatus;
@@ -32,7 +32,7 @@ public class TwitLongerReaderActivity extends Activity implements Constants, OnC
 	private String mResult, mUser;
 	private ParcelableStatus mStatus;
 	private TwitLongerReaderTask mTwitLongerPostTask;
-	private BDTranslateTask translateTask;
+	private MSTranslateTask translateTask;
 	private static final Pattern PATTERN_TWITLONGER = Pattern.compile("((tl\\.gd|www.twitlonger.com\\/show)\\/([\\w\\d]+))",
 			Pattern.CASE_INSENSITIVE);
 	private static final int GROUP_TWITLONGER_ID = 3;
@@ -71,7 +71,7 @@ public class TwitLongerReaderActivity extends Activity implements Constants, OnC
 							translateTask.cancel(true);
 						}else {
 							if (!isTranslated) {
-								translateTask = new BDTranslateTask(ORIGINAL_STRING);
+								translateTask = new MSTranslateTask(ORIGINAL_STRING);
 								translateTask.execute();
 							}else {
 								if (isOrignal) {
@@ -197,17 +197,17 @@ public class TwitLongerReaderActivity extends Activity implements Constants, OnC
 
 	}
 	
-	public final class BDTranslateTask extends AsyncTask<Void, Void, Object> {
+	public final class MSTranslateTask extends AsyncTask<Void, Void, Object> {
 
 		private final String srcContent;
 
-		public BDTranslateTask(String srcContent) {
+		public MSTranslateTask(String srcContent) {
 			this.srcContent = srcContent;
 		}
 
 		@Override
 		protected Object doInBackground(Void... args) {
-			final BDTranslate translate = new BDTranslate();
+			final MSTranslate translate = new MSTranslate();
 			try {
 				return translate.postTranslate(srcContent);
 			} catch (Exception e) {
@@ -223,9 +223,10 @@ public class TwitLongerReaderActivity extends Activity implements Constants, OnC
 				mPreview.setText(TRANSLATED_STRING);
 				isTranslated = true;
 				isOrignal = false;
-			} else if (result instanceof BDTranslateException) {
+			} else if (result instanceof MSTranslateException) {
+				System.out.println(((MSTranslateException) result).getMessage());
 				Toast.makeText(TwitLongerReaderActivity.this,
-						getString(R.string.error_message, ((BDTranslateException) result).getMessage()),
+						getString(R.string.error_message, ((MSTranslateException) result).getMessage()),
 						Toast.LENGTH_LONG).show();
 			} else {
 				Toast.makeText(TwitLongerReaderActivity.this, R.string.error_unknown_error, Toast.LENGTH_LONG).show();
@@ -236,7 +237,7 @@ public class TwitLongerReaderActivity extends Activity implements Constants, OnC
 
 		@Override
 		protected void onPreExecute() {
-			Toast.makeText(TwitLongerReaderActivity.this, R.string.waiting_for_translated_text, Toast.LENGTH_LONG).show();
+			Toast.makeText(TwitLongerReaderActivity.this, R.string.waiting_for_translated_text, Toast.LENGTH_SHORT).show();
 			super.onPreExecute();
 		}
 	}
