@@ -51,7 +51,7 @@ public class MSTranslate {
 	private static final String DATAMARKETACCESSURL_STRING = "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13";
 	private static final String MSTRANSLATEURL_STRING = "http://api.microsofttranslator.com/V2/Http.svc/Translate";
 	private static final Pattern PATTERN_LINK = Pattern.compile("((RT\\s?)?(@([a-zA-Z0-9_\\u4e00-\\u9fa5]{1,20})):?)|((https?://)([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\-\\.]*(\\?\\S+)?)?)?)|(\\#[a-zA-Z0-9_%\\u4e00-\\u9fa5]*)", Pattern.CASE_INSENSITIVE);
-	private static final Pattern PATTERN_ALPHA = Pattern.compile(",,,,,|，，，，，");
+	private static final Pattern PATTERN_ALPHA = Pattern.compile("(11111)");
 	private final ArrayList<String> linkStrings = new ArrayList<String>();
 	private int uneed2TranslateElementIndex = 0;
 	
@@ -72,7 +72,7 @@ public class MSTranslate {
 					linkStrings.add(matcher.group(12));
 				}
 			}
-			queryString = PATTERN_LINK.matcher(srcContent).replaceAll(",,,,,");
+			queryString = PATTERN_LINK.matcher(srcContent).replaceAll("11111");
 			queryString = URLEncoder.encode(queryString,"UTF-8");
 			final String access_tokenString = getAccessToken();
 			final String getURL = MSTRANSLATEURL_STRING+"?"+"appid="+"&text="+queryString+"&to=zh-CHS&contentType=text/plain";
@@ -112,7 +112,7 @@ public class MSTranslate {
 	 * @throws IOException 
 	 * @throws XmlPullParserException 
 	 * @Title: parseTranslateResponse
-	 * @Description: TODO(解析百度返回的json数据)
+	 * @Description: TODO(解析巨硬返回的XML数据)
 	 * @param @param response
 	 * @param @return
 	 * @param @throws JSONException    设定文件
