@@ -51,15 +51,16 @@ public class MSTranslate {
 	private static final String DATAMARKETACCESSURL_STRING = "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13";
 	private static final String MSTRANSLATEURL_STRING = "http://api.microsofttranslator.com/V2/Http.svc/Translate";
 	private static final Pattern PATTERN_LINK = Pattern.compile("((RT\\s?)?(@([a-zA-Z0-9_\\u4e00-\\u9fa5]{1,20})):?)|((https?://)([-\\w\\.]+)+(:\\d+)?(/([\\w/_\\-\\.]*(\\?\\S+)?)?)?)|(\\#[a-zA-Z0-9_%\\u4e00-\\u9fa5]*)", Pattern.CASE_INSENSITIVE);
-	private static final Pattern PATTERN_ALPHA = Pattern.compile("(11111)");
+	private static final Pattern PATTERN_ALPHA = Pattern.compile("(777)");
 	private final ArrayList<String> linkStrings = new ArrayList<String>();
+	private String ACCESS_TOKEN_STRING = null;
 	private int uneed2TranslateElementIndex = 0;
 	
 	public MSTranslate() {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public TranslateResponse postTranslate(String srcContent) throws MSTranslateException, IllegalStateException, JSONException {
+	public TranslateResponse postTranslate(String srcContent, String to) throws MSTranslateException, IllegalStateException, JSONException {
 		try {
 			String queryString = "";
 			final Matcher matcher = PATTERN_LINK.matcher(srcContent);
@@ -72,22 +73,35 @@ public class MSTranslate {
 					linkStrings.add(matcher.group(12));
 				}
 			}
-			queryString = PATTERN_LINK.matcher(srcContent).replaceAll("11111");
+			queryString = PATTERN_LINK.matcher(srcContent).replaceAll("777");
+			final String srcString = queryString;
 			queryString = URLEncoder.encode(queryString,"UTF-8");
-			final String access_tokenString = getAccessToken();
-			final String getURL = MSTRANSLATEURL_STRING+"?"+"appid="+"&text="+queryString+"&to=zh-CHS&contentType=text/plain";
+			if (ACCESS_TOKEN_STRING == null) {
+				ACCESS_TOKEN_STRING = getAccessToken();
+			}
+			final String getURL = MSTRANSLATEURL_STRING+"?"+"appid="+"&text="+queryString+"&to="+to+"&contentType=text/plain";
 			final HttpClient httpclient = new DefaultHttpClient();
 			final HttpGet httpGet = new HttpGet();
 			httpGet.setURI(new URI(getURL));
-			httpGet.setHeader("Authorization", "Bearer "+access_tokenString);
+			httpGet.setHeader("Authorization", "Bearer "+ACCESS_TOKEN_STRING);
 			final HttpResponse response = httpclient.execute(httpGet);
-			return parseTranslateResponse(EntityUtils.toString(response.getEntity()));
+			return parseTranslateResponse(srcString,EntityUtils.toString(response.getEntity()));
 		} catch ( Exception e) {
 			throw new MSTranslateException(e);
 		}
 	}
 	
 	
+	/**
+	 * @Title: getAccessToken
+	 * @Description: TODO(获取巨硬data商店的accesstoken)
+	 * @param @return
+	 * @param @throws MSTranslateException
+	 * @param @throws ParseException
+	 * @param @throws JSONException    设定文件
+	 * @return String    返回类型
+	 * @throws
+	 */
 	public String getAccessToken() throws MSTranslateException, ParseException, JSONException {
 		try {
 			final HttpClient httpclient = new DefaultHttpClient();
@@ -109,17 +123,18 @@ public class MSTranslate {
 	}
 	
 	/**
+	 * @throws MSTranslateException 
+	 * @throws IllegalStateException 
 	 * @throws IOException 
 	 * @throws XmlPullParserException 
 	 * @Title: parseTranslateResponse
 	 * @Description: TODO(解析巨硬返回的XML数据)
 	 * @param @param response
-	 * @param @return
 	 * @param @throws JSONException    设定文件
 	 * @return TranslateResponse    返回类型
 	 * @throws
 	 */
-	public TranslateResponse parseTranslateResponse(String response) throws JSONException, XmlPullParserException, IOException {
+	public TranslateResponse parseTranslateResponse(String src,String response) throws JSONException, XmlPullParserException, IOException, IllegalStateException, MSTranslateException {
 		String from = "yangpi", to = "chinese", translateResult = "";
 		final XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
 		factory.setNamespaceAware(true);
@@ -132,8 +147,12 @@ public class MSTranslate {
 	          }
 			eventType = parser.next();
 		}
-		translateResult = replaceURL(PATTERN_ALPHA, translateResult);
-		return new TranslateResponse(from, to, translateResult);
+		if (src.equals(translateResult)) {
+			return postTranslate(src, "en");
+		}else {
+			translateResult = replaceURL(PATTERN_ALPHA, translateResult);
+			return new TranslateResponse(from, to, translateResult);
+		}
 	}
 	
 	public String replaceURL(Pattern pattern,String toReplaceString) {

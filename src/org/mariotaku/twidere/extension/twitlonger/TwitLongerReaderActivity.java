@@ -209,7 +209,7 @@ public class TwitLongerReaderActivity extends Activity implements Constants, OnC
 		protected Object doInBackground(Void... args) {
 			final MSTranslate translate = new MSTranslate();
 			try {
-				return translate.postTranslate(srcContent);
+				return translate.postTranslate(srcContent,"zh-CHS");
 			} catch (Exception e) {
 				// TODO: handle exception
 				return e;
