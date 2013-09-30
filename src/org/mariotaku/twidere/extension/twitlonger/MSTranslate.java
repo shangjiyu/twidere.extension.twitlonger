@@ -13,19 +13,30 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
@@ -80,7 +91,8 @@ public class MSTranslate {
 				ACCESS_TOKEN_STRING = getAccessToken();
 			}
 			final String getURL = MSTRANSLATEURL_STRING+"?"+"appid="+"&text="+queryString+"&to="+to+"&contentType=text/plain";
-			final HttpClient httpclient = new DefaultHttpClient();
+//			final HttpClient httpclient = new DefaultHttpClient();
+			final HttpClient httpclient = getNewHttpClient();
 			final HttpGet httpGet = new HttpGet();
 			httpGet.setURI(new URI(getURL));
 			httpGet.setHeader("Authorization", "Bearer "+ACCESS_TOKEN_STRING);
@@ -104,7 +116,8 @@ public class MSTranslate {
 	 */
 	public String getAccessToken() throws MSTranslateException, ParseException, JSONException {
 		try {
-			final HttpClient httpclient = new DefaultHttpClient();
+//			final HttpClient httpclient = new DefaultHttpClient();
+			final HttpClient httpclient = getNewHttpClient();
 			final HttpPost httpPost = new HttpPost(DATAMARKETACCESSURL_STRING);
 			final ArrayList<NameValuePair> args = new ArrayList<NameValuePair>();
 			args.add(new BasicNameValuePair("client_id", CLIEND_ID_STRING));
@@ -203,5 +216,36 @@ public class MSTranslate {
 			this.translateResult = translateResult;
 		}
 	}
+	
+	/********************************************************
+	 * @Title: getNewHttpClient
+	 * @Description: TODO(get self httpClient that trust all of servers)
+	 * @param @return    设定文件
+	 * @return HttpClient    返回类型
+	 * @throws
+	 */
+	public static HttpClient getNewHttpClient() {
+		   try {
+		       KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+		       trustStore.load(null, null);
+
+		       SSLSocketFactory sf = new SSLSocketFactoryEx(trustStore);
+		       sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+		       HttpParams params = new BasicHttpParams();
+		       HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+		       HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
+
+		       SchemeRegistry registry = new SchemeRegistry();
+		       registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+		       registry.register(new Scheme("https", sf, 443));
+
+		       ClientConnectionManager ccm = new ThreadSafeClientConnManager(params, registry);
+
+		       return new DefaultHttpClient(ccm, params);
+		   } catch (Exception e) {
+		       return new DefaultHttpClient();
+		   }
+		} 
 }
 
